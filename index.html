@@ -116,13 +116,9 @@ ul { list-style: none; }
 }
 .btn-outline-light:hover { border-color: rgba(240,234,224,.8); background: rgba(240,234,224,.08); }
 
-/* ─── REVEAL ─── */
-.reveal { opacity: 0; transform: translateY(28px); transition: opacity .6s ease, transform .6s ease; }
-.reveal.visible { opacity: 1; transform: none; }
-.reveal-delay-1 { transition-delay: .1s; }
-.reveal-delay-2 { transition-delay: .2s; }
-.reveal-delay-3 { transition-delay: .3s; }
-.reveal-delay-4 { transition-delay: .4s; }
+/* ─── REVEAL ─── handled by GSAP ─── */
+.reveal { opacity: 0; }
+.reveal.visible { opacity: 1; }
 
 /* ─── NAV ─── */
 .nav {
@@ -1668,55 +1664,33 @@ updateFab();
 // Scroll reveal — GSAP ScrollTrigger
 gsap.registerPlugin(ScrollTrigger);
 
-// Reset CSS transitions so GSAP takes over
-document.querySelectorAll('.reveal').forEach(el => {
-  el.style.transition = 'none';
-});
+// Remove CSS transition so GSAP controls everything
+// Set initial state via GSAP (not CSS) to avoid conflicts
+gsap.set('.reveal', { opacity: 0, y: 28 });
 
+// Single batch for all reveal elements
 ScrollTrigger.batch('.reveal', {
-  start: 'top 90%',
+  start: 'top 92%',
   once: true,
+  interval: 0.05,
   onEnter: batch => gsap.to(batch, {
     opacity: 1,
     y: 0,
-    duration: 0.7,
+    duration: 0.75,
     ease: 'power3.out',
-    stagger: 0.1,
+    stagger: 0.08,
     overwrite: true
   })
 });
 
-// Section headings — slide in from left
-gsap.utils.toArray('.section-heading').forEach(el => {
+// Section headings — slide in from left (only ones NOT already .reveal)
+gsap.utils.toArray('.section-heading:not(.reveal)').forEach(el => {
   gsap.from(el, {
-    x: -40,
+    x: -30,
     opacity: 0,
     duration: 0.8,
     ease: 'power3.out',
-    scrollTrigger: {
-      trigger: el,
-      start: 'top 88%',
-      once: true
-    }
-  });
-});
-
-// Cards stagger (produtos, diferenciais, avaliações)
-['product-card', 'diferencial-card', 'avaliacao-card'].forEach(cls => {
-  ScrollTrigger.batch(`.${cls}`, {
-    start: 'top 88%',
-    once: true,
-    interval: 0.05,
-    batchMax: 6,
-    onEnter: batch => gsap.from(batch, {
-      opacity: 0,
-      y: 40,
-      scale: 0.97,
-      duration: 0.6,
-      ease: 'power3.out',
-      stagger: 0.08,
-      overwrite: true
-    })
+    scrollTrigger: { trigger: el, start: 'top 88%', once: true }
   });
 });
 
