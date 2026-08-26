@@ -120,33 +120,6 @@ ul { list-style: none; }
 .reveal { opacity: 0; }
 .reveal.visible { opacity: 1; }
 
-/* ─── CUSTOM CURSOR ─── */
-@media (pointer: fine) {
-  *, *::before, *::after { cursor: none !important; }
-}
-#cursor-dot {
-  position: fixed; top: 0; left: 0; z-index: 99999;
-  width: 6px; height: 6px;
-  background: var(--accent);
-  border-radius: 50%;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
-  transition: width .2s, height .2s, background .2s;
-}
-#cursor-ring {
-  position: fixed; top: 0; left: 0; z-index: 99998;
-  width: 36px; height: 36px;
-  border: 1.5px solid var(--accent);
-  border-radius: 50%;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
-  opacity: 0.5;
-  transition: width .3s ease, height .3s ease, opacity .3s ease, border-color .3s ease;
-}
-body.cursor-hover #cursor-dot { width: 10px; height: 10px; background: var(--wpp); }
-body.cursor-hover #cursor-ring { width: 56px; height: 56px; opacity: 0.25; border-color: var(--wpp); }
-body.cursor-btn #cursor-dot { width: 48px; height: 48px; opacity: 0.12; background: var(--accent); }
-body.cursor-btn #cursor-ring { width: 0; height: 0; opacity: 0; }
 
 /* ─── NAV ─── */
 .nav {
@@ -964,10 +937,6 @@ footer {
 </style>
 </head>
 <body>
-
-<!-- ─── CUSTOM CURSOR ─── -->
-<div id="cursor-dot"></div>
-<div id="cursor-ring"></div>
 
 <!-- ─── VIDEO BLUR OVERLAY ─── -->
 <div id="video-blur" style="
@@ -1797,31 +1766,7 @@ mm.add({
   const { isDesktop, reduceMotion } = ctx.conditions;
   if (reduceMotion) return;
 
-  // ── 1. CUSTOM CURSOR ──────────────────────
-  if (isDesktop) {
-    const dot  = document.getElementById('cursor-dot');
-    const ring = document.getElementById('cursor-ring');
-    let mx = window.innerWidth / 2, my = window.innerHeight / 2;
-
-    window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-
-    gsap.ticker.add(() => {
-      gsap.set(dot, { x: mx, y: my });
-      gsap.to(ring, { x: mx, y: my, duration: 0.18, ease: 'power2.out' });
-    });
-
-    // Hover states
-    document.querySelectorAll('a, button').forEach(el => {
-      el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
-      el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
-    });
-    document.querySelectorAll('.btn').forEach(el => {
-      el.addEventListener('mouseenter', () => { document.body.classList.remove('cursor-hover'); document.body.classList.add('cursor-btn'); });
-      el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-btn'));
-    });
-  }
-
-  // ── 2. HERO ENTRANCE TIMELINE ─────────────
+  // ── 1. HERO ENTRANCE TIMELINE ─────────────
   const heroTl = gsap.timeline({ delay: 0.3 });
   heroTl
     .from('.hero-body p:first-child', { y: 20, opacity: 0, duration: 0.8, ease: 'power3.out' })
