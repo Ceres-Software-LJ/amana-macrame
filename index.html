@@ -1023,8 +1023,8 @@ footer {
         <p class="about-text reveal reveal-delay-2">No Amaná Makramiya, cada peça nasce do trabalho manual, da criatividade e do cuidado com os detalhes. Criamos peças em macramê para decorar, presentear e transformar ambientes — valorizando a beleza do artesanal e a personalidade de quem escolhe cada criação.</p>
         <p class="about-text reveal reveal-delay-2">Somos um ateliê de Campo Grande, MS, atendendo clientes de todo o Brasil com entrega por transportadora. Cada peça é única — não existe cópia, não existe linha de produção. Só dedicação, fio por fio.</p>
         <div class="about-stats reveal reveal-delay-3">
-          <div class="stat-item"><strong>100%</strong> Feito à mão</div>
-          <div class="stat-item"><strong>8+</strong> Categorias de peças</div>
+          <div class="stat-item"><strong class="stat-num" data-target="100" data-suffix="%">100%</strong> Feito à mão</div>
+          <div class="stat-item"><strong class="stat-num" data-target="30" data-suffix="+">30+</strong> Categorias de peças</div>
           <div class="stat-item"><strong>∞</strong> Opções de cor e tamanho</div>
         </div>
         <a href="https://wa.me/5567992903414" target="_blank" rel="noopener" class="btn btn-accent reveal reveal-delay-3">Falar com a artesã →</a>
@@ -1832,19 +1832,17 @@ mm.add({
   }
 
   // ── 7. STAT COUNTERS ──────────────────────
-  document.querySelectorAll('.stat-item strong').forEach(el => {
-    const text = el.textContent.trim();
-    const num  = parseFloat(text);
-    if (!isNaN(num)) {
-      const suffix = text.replace(String(num), '');
-      gsap.from({ val: 0 }, {
-        val: num,
-        duration: 1.5,
-        ease: 'power2.out',
-        scrollTrigger: { trigger: el, start: 'top 85%', once: true },
-        onUpdate: function() { el.textContent = Math.round(this.targets()[0].val) + suffix; }
-      });
-    }
+  document.querySelectorAll('.stat-num').forEach(el => {
+    const target = parseFloat(el.dataset.target);
+    const suffix = el.dataset.suffix || '';
+    const obj = { val: 0 };
+    gsap.to(obj, {
+      val: target,
+      duration: 1.8,
+      ease: 'power2.out',
+      scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+      onUpdate: () => { el.textContent = Math.round(obj.val) + suffix; }
+    });
   });
 
   // ── 8. SECTION DIVIDER LINES ──────────────
