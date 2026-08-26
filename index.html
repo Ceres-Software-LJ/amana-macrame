@@ -12,6 +12,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Dancing+Script:wght@600&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 
 <style>
 /* ─── TOKENS ─── */
@@ -1663,17 +1665,60 @@ updateFab();
   });
 })();
 
-// Scroll reveal
-const reveals = document.querySelectorAll('.reveal');
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.classList.add('visible');
-      observer.unobserve(e.target);
+// Scroll reveal — GSAP ScrollTrigger
+gsap.registerPlugin(ScrollTrigger);
+
+// Reset CSS transitions so GSAP takes over
+document.querySelectorAll('.reveal').forEach(el => {
+  el.style.transition = 'none';
+});
+
+ScrollTrigger.batch('.reveal', {
+  start: 'top 90%',
+  once: true,
+  onEnter: batch => gsap.to(batch, {
+    opacity: 1,
+    y: 0,
+    duration: 0.7,
+    ease: 'power3.out',
+    stagger: 0.1,
+    overwrite: true
+  })
+});
+
+// Section headings — slide in from left
+gsap.utils.toArray('.section-heading').forEach(el => {
+  gsap.from(el, {
+    x: -40,
+    opacity: 0,
+    duration: 0.8,
+    ease: 'power3.out',
+    scrollTrigger: {
+      trigger: el,
+      start: 'top 88%',
+      once: true
     }
   });
-}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-reveals.forEach(el => observer.observe(el));
+});
+
+// Cards stagger (produtos, diferenciais, avaliações)
+['product-card', 'diferencial-card', 'avaliacao-card'].forEach(cls => {
+  ScrollTrigger.batch(`.${cls}`, {
+    start: 'top 88%',
+    once: true,
+    interval: 0.05,
+    batchMax: 6,
+    onEnter: batch => gsap.from(batch, {
+      opacity: 0,
+      y: 40,
+      scale: 0.97,
+      duration: 0.6,
+      ease: 'power3.out',
+      stagger: 0.08,
+      overwrite: true
+    })
+  });
+});
 
 // FAQ accordion
 document.querySelectorAll('.faq-question').forEach(btn => {
