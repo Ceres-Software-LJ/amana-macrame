@@ -939,30 +939,19 @@ footer {
 </head>
 <body>
 
-<!-- ─── SPLASH SCREEN ─── -->
-<div id="splash" style="
+<!-- ─── VIDEO BLUR OVERLAY ─── -->
+<div id="video-blur" style="
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: #FAF7F2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1.5rem;
-  transition: opacity 0.6s ease, visibility 0.6s ease;
-">
-  <img src="logo.png" alt="Amaná Makramiya" style="height: 100px; width: auto; object-fit: contain; animation: splashPulse 1.5s ease-in-out infinite;">
-  <div style="width: 48px; height: 2px; background: #D9CFC5; border-radius: 2px; overflow: hidden; position: relative;">
-    <div id="splash-bar" style="position:absolute;left:0;top:0;height:100%;width:0%;background:#B87040;transition:width 0.1s linear;"></div>
-  </div>
-</div>
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  background: rgba(250,247,242,0.4);
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+  pointer-events: none;
+"></div>
 <style>
-@keyframes splashPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(0.97); }
-}
-#splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+#video-blur.hidden { opacity: 0; visibility: hidden; }
 </style>
 
 <!-- ─── NAV ─── -->
@@ -1738,28 +1727,19 @@ document.addEventListener('keydown', e => {
 </script>
 
 <script>
-// Splash screen
-const splash = document.getElementById('splash');
-const splashBar = document.getElementById('splash-bar');
-const video = document.querySelector('.hero video');
-let pct = 0;
+// Video blur overlay
+const videoBlur = document.getElementById('video-blur');
+const heroVideo = document.querySelector('.hero video');
 
-const barInterval = setInterval(() => {
-  pct = Math.min(pct + 2, 85);
-  splashBar.style.width = pct + '%';
-}, 40);
-
-function hideSplash() {
-  clearInterval(barInterval);
-  splashBar.style.width = '100%';
-  setTimeout(() => { splash.classList.add('hidden'); }, 300);
+function hideBlur() {
+  videoBlur.classList.add('hidden');
 }
 
-if (video) {
-  video.addEventListener('canplay', hideSplash, { once: true });
-  setTimeout(hideSplash, 3000); // fallback: max 3s
+if (heroVideo) {
+  heroVideo.addEventListener('canplay', hideBlur, { once: true });
+  setTimeout(hideBlur, 2500); // fallback
 } else {
-  setTimeout(hideSplash, 1500);
+  hideBlur();
 }
 </script>
 </body>
