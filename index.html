@@ -120,6 +120,34 @@ ul { list-style: none; }
 .reveal { opacity: 0; }
 .reveal.visible { opacity: 1; }
 
+/* ─── CUSTOM CURSOR ─── */
+@media (pointer: fine) {
+  *, *::before, *::after { cursor: none !important; }
+}
+#cursor-dot {
+  position: fixed; top: 0; left: 0; z-index: 99999;
+  width: 6px; height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: width .2s, height .2s, background .2s;
+}
+#cursor-ring {
+  position: fixed; top: 0; left: 0; z-index: 99998;
+  width: 36px; height: 36px;
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  opacity: 0.5;
+  transition: width .3s ease, height .3s ease, opacity .3s ease, border-color .3s ease;
+}
+body.cursor-hover #cursor-dot { width: 10px; height: 10px; background: var(--wpp); }
+body.cursor-hover #cursor-ring { width: 56px; height: 56px; opacity: 0.25; border-color: var(--wpp); }
+body.cursor-btn #cursor-dot { width: 48px; height: 48px; opacity: 0.12; background: var(--accent); }
+body.cursor-btn #cursor-ring { width: 0; height: 0; opacity: 0; }
+
 /* ─── NAV ─── */
 .nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 900;
@@ -937,6 +965,10 @@ footer {
 </head>
 <body>
 
+<!-- ─── CUSTOM CURSOR ─── -->
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+
 <!-- ─── VIDEO BLUR OVERLAY ─── -->
 <div id="video-blur" style="
   position: fixed;
@@ -1666,6 +1698,10 @@ gsap.registerPlugin(ScrollTrigger);
 
 // Remove CSS transition so GSAP controls everything
 // Set initial state via GSAP (not CSS) to avoid conflicts
+// Exclude hero elements (animated by hero timeline)
+const heroEls = document.querySelectorAll('.hero-body .reveal');
+heroEls.forEach(el => el.classList.remove('reveal'));
+
 gsap.set('.reveal', { opacity: 0, y: 28 });
 
 // Single batch for all reveal elements
@@ -1744,6 +1780,140 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeMenu();
+});
+</script>
+
+<script>
+// ═══════════════════════════════════════════
+// PREMIUM ANIMATIONS
+// ═══════════════════════════════════════════
+
+const mm = gsap.matchMedia();
+
+mm.add({
+  isDesktop: '(min-width: 769px) and (pointer: fine)',
+  reduceMotion: '(prefers-reduced-motion: reduce)'
+}, ctx => {
+  const { isDesktop, reduceMotion } = ctx.conditions;
+  if (reduceMotion) return;
+
+  // ── 1. CUSTOM CURSOR ──────────────────────
+  if (isDesktop) {
+    const dot  = document.getElementById('cursor-dot');
+    const ring = document.getElementById('cursor-ring');
+    let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+
+    window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+
+    gsap.ticker.add(() => {
+      gsap.set(dot, { x: mx, y: my });
+      gsap.to(ring, { x: mx, y: my, duration: 0.18, ease: 'power2.out' });
+    });
+
+    // Hover states
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+      el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+    });
+    document.querySelectorAll('.btn').forEach(el => {
+      el.addEventListener('mouseenter', () => { document.body.classList.remove('cursor-hover'); document.body.classList.add('cursor-btn'); });
+      el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-btn'));
+    });
+  }
+
+  // ── 2. HERO ENTRANCE TIMELINE ─────────────
+  const heroTl = gsap.timeline({ delay: 0.3 });
+  heroTl
+    .from('.hero-body p:first-child', { y: 20, opacity: 0, duration: 0.8, ease: 'power3.out' })
+    .from('.hero-headline', { y: 40, opacity: 0, duration: 0.9, ease: 'power3.out' }, '-=0.4')
+    .from('.hero-sub', { y: 30, opacity: 0, duration: 0.8, ease: 'power3.out' }, '-=0.5')
+    .from('.hero-ctas', { y: 20, opacity: 0, duration: 0.7, ease: 'power3.out' }, '-=0.4')
+    .from('.trust-bar', { y: 15, opacity: 0, duration: 0.6, ease: 'power3.out' }, '-=0.3');
+
+  // ── 3. HERO PARALLAX ──────────────────────
+  gsap.to('.hero-body', {
+    y: -60,
+    ease: 'none',
+    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1 }
+  });
+  gsap.to('.hero video', {
+    y: 80,
+    ease: 'none',
+    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1.5 }
+  });
+
+  // ── 4. ABOUT IMAGE PARALLAX ───────────────
+  gsap.to('.about-image img', {
+    y: -40,
+    ease: 'none',
+    scrollTrigger: { trigger: '.about-image', start: 'top bottom', end: 'bottom top', scrub: 1 }
+  });
+
+  // ── 5. MAGNETIC BUTTONS ───────────────────
+  if (isDesktop) {
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('mousemove', e => {
+        const rect = btn.getBoundingClientRect();
+        const dx = e.clientX - (rect.left + rect.width / 2);
+        const dy = e.clientY - (rect.top  + rect.height / 2);
+        gsap.to(btn, { x: dx * 0.3, y: dy * 0.3, duration: 0.3, ease: 'power2.out' });
+      });
+      btn.addEventListener('mouseleave', () => {
+        gsap.to(btn, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.5)' });
+      });
+    });
+  }
+
+  // ── 6. 3D CARD TILT ───────────────────────
+  if (isDesktop) {
+    document.querySelectorAll('.product-card').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const rect = card.getBoundingClientRect();
+        const dx = (e.clientX - rect.left) / rect.width  - 0.5;
+        const dy = (e.clientY - rect.top)  / rect.height - 0.5;
+        gsap.to(card, {
+          rotationY: dx * 12,
+          rotationX: -dy * 12,
+          scale: 1.03,
+          transformPerspective: 800,
+          ease: 'power2.out',
+          duration: 0.4
+        });
+      });
+      card.addEventListener('mouseleave', () => {
+        gsap.to(card, { rotationY: 0, rotationX: 0, scale: 1, duration: 0.5, ease: 'power3.out' });
+      });
+    });
+  }
+
+  // ── 7. STAT COUNTERS ──────────────────────
+  document.querySelectorAll('.stat-item strong').forEach(el => {
+    const text = el.textContent.trim();
+    const num  = parseFloat(text);
+    if (!isNaN(num)) {
+      const suffix = text.replace(String(num), '');
+      gsap.from({ val: 0 }, {
+        val: num,
+        duration: 1.5,
+        ease: 'power2.out',
+        scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+        onUpdate: function() { el.textContent = Math.round(this.targets()[0].val) + suffix; }
+      });
+    }
+  });
+
+  // ── 8. SECTION DIVIDER LINES ──────────────
+  gsap.utils.toArray('section').forEach((sec, i) => {
+    if (i === 0) return;
+    gsap.from(sec, {
+      opacity: 0.6,
+      scale: 0.99,
+      duration: 0.6,
+      ease: 'power2.out',
+      scrollTrigger: { trigger: sec, start: 'top 90%', once: true }
+    });
+  });
+
 });
 </script>
 
